@@ -28,6 +28,27 @@ def test_database(tmp_path, monkeypatch):
     )
 client = TestClient(app)
 
+def test_create_note_empty_title():
+    data = {
+    "title": "",
+    "text": "123123"
+    }
+    response = client.post("/notes", json=data)
+    assert response.status_code == 422
+    g_response = client.get("/notes")
+    assert g_response.status_code==200
+    assert g_response.json() == []
+def test_update_missing_note():
+    data = {
+        "title": "fdaffsf",
+        "text": "123123"
+        }
+    response = client.put("/notes/999", json=data)
+    assert response.status_code==404
+    
+    g_response = client.get("/notes/999")
+    assert g_response.status_code==404
+
 
 def test_get_note_invalid_lm_off():
     response = client.get("/notes?limit=-31?offset=-1")
