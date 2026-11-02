@@ -1,50 +1,86 @@
-# from pydantic import BaseModel
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-
-# class Item(BaseModel):
-#     name: str
-#     description: str | None = None
-#     price: float
-#     tax: float | None = None
-#     tags: list[str] = []
-
-# @app.post("/items/")
-# async def create_item(item: Item) -> Item:
-#     return item
-
-# @app.get("/items/")
-# def read_items() -> list[Item]:
-#     return [
-#         Item(name = 'Portal Gun', price=42.0),
-#         Item(name = 'Plumbus', price = 32.0)
-#     ]
-
 from fastapi import FastAPI, Query, HTTPException
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
+from database import get_connection
 app =FastAPI()
 
 class Note(BaseModel):
     id: int
     title: str
     text: str
+class NoteCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=100 )
+    text: str = Field(min_length=1)
+      
+@app.post("/notes", response_model=Note, status_code=201)
+def create_note(note_data: NoteCreate):
+    connection = get_connection()
 
-notes = [
-    {"id": 1, "title": "thank you", "text": "hi!"},
-    {"id": 2, "title": "thank you2", "text": "hi!2"},
-    {"id": 3, "title": "thank you3", "text": "hi!3"},
-]
+    cursor = connection.execute(
+        "INSERT INTO notes (title, text) VALUES (?,?)",
+        (note_data.title,note_data.text)
+    )
+    connection.commit()
+
+    new_id = cursor.lastrowid
+    connection.close()
+    return {
+        "id": new_id,
+        "title": note_data.title,
+        "text": note_data.text,
+    }
+    
+@app.put("/notes/{note_id}",response_model=Note)
+def update_note(note_id:int,note_data: NoteCreate):
+    connection = get_connection()
+    cursor = connection.execute(
+        "UPDATE notes SET title = ? , text = ? WHERE id = ?",
+        (note_data.title,note_data.text,note_id)
+    )
+    connection.commit()
+    upd_count = cursor.rowcount
+    connection.close()
+    if upd_count==0:
+        raise HTTPException(status_code=404, detail="Заметки с таким id нету")
+    return {
+        "id": note_id,
+        "title": note_data.title,
+        "text": note_data.text
+    }
+
+@app.delete("/notes/{note_id}", status_code=204)
+def delete_note(note_id:int):
+    connection = get_connection()
+    cursor = connection.execute(
+        "DELETE FROM notes WHERE id = ?",
+        (note_id,)
+    )
+    connection.commit()
+    upd_count = cursor.rowcount
+    connection.close()
+    if upd_count==0:
+        raise HTTPException(status_code=404, detail="Заметки с таким id не существует!")
+    return
 
 @app.get("/notes/{note_id}",response_model=Note)
 def show_id(note_id: int):
-    for note in notes:
-        if note_id == note["id"]:
-            return note
-    raise HTTPException(status_code=404, detail="Заметка не найдена!")
+    connection = get_connection()
+    cursor = connection.execute(
+        "SELECT id, title, text FROM notes WHERE id= ?",
+        (note_id,)
+    )
+    row = cursor.fetchone()
+    connection.close()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Заметка не найдена")
+    return dict(row)
 
 @app.get("/notes",response_model=list[Note])
 def show_notes(limit: int=Query(default=10,ge=1,le=50),offset: int=Query(default=0,ge=0)):
-    return notes[offset:offset + limit]
+    connection = get_connection()
+    cursor = connection.execute(
+        "SELECT id, title, text FROM notes ORDER BY id LIMIT ? OFFSET ?",
+        (limit, offset),
+    )
+    rows = cursor.fetchall()
+    connection.close()
+    return [dict(row) for row in rows]
