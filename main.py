@@ -1,15 +1,8 @@
 from fastapi import FastAPI, Query, HTTPException
-from pydantic import BaseModel, Field
 from database import get_connection
+from schemas import Note, NoteCreate
 app =FastAPI()
 
-class Note(BaseModel):
-    id: int
-    title: str
-    text: str
-class NoteCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=100 )
-    text: str = Field(min_length=1)
       
 @app.post("/notes", response_model=Note, status_code=201)
 def create_note(note_data: NoteCreate):

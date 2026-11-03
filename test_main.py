@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
-from practice3 import app
+from main import app
 import sqlite3
 import pytest
-import practice3
+import main
 
 @pytest.fixture(autouse=True)
 def test_database(tmp_path, monkeypatch):
@@ -22,7 +22,7 @@ def test_database(tmp_path, monkeypatch):
     connection.commit()
     connection.close()
     monkeypatch.setattr(
-        practice3,
+        main,
         "get_connection",
         get_test_connection,
     )
