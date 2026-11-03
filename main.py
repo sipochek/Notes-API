@@ -21,7 +21,7 @@ def create_note(note_data: NoteCreate):
         "title": note_data.title,
         "text": note_data.text,
     }
-    
+
 @app.put("/notes/{note_id}",response_model=Note)
 def update_note(note_id:int,note_data: NoteCreate):
     connection = get_connection()
@@ -68,12 +68,19 @@ def show_id(note_id: int):
     return dict(row)
 
 @app.get("/notes",response_model=list[Note])
-def show_notes(limit: int=Query(default=10,ge=1,le=50),offset: int=Query(default=0,ge=0)):
+def show_notes(limit: int=Query(default=10,ge=1,le=50),offset: int=Query(default=0,ge=0),search: str = "",):
     connection = get_connection()
-    cursor = connection.execute(
-        "SELECT id, title, text FROM notes ORDER BY id LIMIT ? OFFSET ?",
-        (limit, offset),
-    )
+    if search == "":
+        cursor = connection.execute(
+            "SELECT * FROM notes ORDER BY id LIMIT ? OFFSET ?",
+            (limit, offset),
+        )
+    else:
+        pattern = f"%{search}%"
+        cursor = connection.execute(
+            "SELECT * FROM notes WHERE title LIKE ? ORDER BY id LIMIT ? OFFSET ?",
+            (pattern,limit, offset)
+        )
     rows = cursor.fetchall()
     connection.close()
     return [dict(row) for row in rows]

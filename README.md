@@ -31,6 +31,7 @@ python -m pytest -v
 | Метод | Адрес | Действие |
 |---|---|---|
 | GET | /notes | Список заметок с limit и offset |
+| GET | /notes?search= | Получить заметку по названию title |
 | GET | /notes/{note_id} | Получить заметку |
 | POST | /notes | Создать заметку |
 | PUT | /notes/{note_id} | Обновить заметку |

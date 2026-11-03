@@ -28,6 +28,30 @@ def test_database(tmp_path, monkeypatch):
     )
 client = TestClient(app)
 
+def test_search_notes():
+    data = {
+        "title": "title del",
+        "text": "text del"
+    }
+    response = client.post("/notes", json = data)
+    other_response = client.post("/notes",json={"title": "SQL основы","text": "Изучаем базы данных"})
+    assert other_response.status_code == 201
+    assert response.status_code == 201
+    s_response = client.get("/notes?search=del")
+    assert s_response.status_code ==200
+    js_res = s_response.json()
+    assert len(js_res) == 1
+    assert js_res[0]["id"] == response.json()["id"] 
+    assert js_res[0]["title"] == "title del"
+    assert js_res[0]["text"] == "text del"
+
+def test_search_notes_no_matches():
+    response = client.post("/notes",json={"title": "SQL основы","text": "Изучаем базы данных"})
+    assert response.status_code == 201
+    s_response = client.get("/notes?search=Python")
+    assert s_response.status_code ==200
+    assert s_response.json() == []
+
 def test_create_note_empty_title():
     data = {
     "title": "",
