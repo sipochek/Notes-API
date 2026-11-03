@@ -51,7 +51,7 @@ def test_update_missing_note():
 
 
 def test_get_note_invalid_lm_off():
-    response = client.get("/notes?limit=-31&offset=-4")
+    response = client.get("/notes?limit=-31&offset=4")
     assert response.status_code==422
 def test_get_note_invalid_off_off():
     response = client.get("/notes?limit=10&offset=-1")
