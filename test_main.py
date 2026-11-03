@@ -51,7 +51,7 @@ def test_update_missing_note():
 
 
 def test_get_note_invalid_lm_off():
-    response = client.get("/notes?limit=-31?offset=-1")
+    response = client.get("/notes?limit=-31&offset=-1")
     assert response.status_code==422
 def test_get_note_invalid_id():
     response = client.get("/notes/abc")
@@ -96,8 +96,8 @@ def test_update_note():
     assert p_response.status_code == 200
     assert p_response.json() == {
         "id": note_id,
-        "title": "gangbang",
-        "text": "gangholdonbang"
+        "title": "updated title",
+        "text": "updated text"
     }
     gp_response = client.get(f"/notes/{note_id}")
     assert gp_response.status_code == 200

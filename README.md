@@ -8,7 +8,8 @@ Python, FastAPI, SQLite, Pydantic, pytest.
 Откройте powershell и перейдите в папку проекта:
 
 ```powershell
-cd C:\Users\User\Desktop\pytho\fast_api\
+git clone https://github.com/sipochek/Notes-API.git
+cd Notes-API
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
