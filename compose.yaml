@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "127.0.0.1:8082:8000"
+    environment:
+      NOTES_DB_PATH: /data/notes.db
+    volumes:
+      - notes-data:/data
+volumes:
+  notes-data:
+    external: true
