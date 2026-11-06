@@ -36,3 +36,16 @@ python -m pytest -v
 | POST | /notes | Создать заметку |
 | PUT | /notes/{note_id} | Обновить заметку |
 | DELETE | /notes/{note_id} | Удалить заметку |
+
+## Установка зависимостей через Docker
+
+1. Для начала перейдите в папку с проектом fast_api: командой cd ...(вместо ... ваше расположение проекта)
+2. Затем в папке с проектом выполнить команду:
+    ```powershell
+    docker volume create notes-data
+    ```
+3. Здесь же комада:
+    ```powershell
+    docker compose up -d --build
+    ```
+4. Откройте [Swagger UI](http://127.0.0.1:8082/docs) или проверьте [GET /notes](http://127.0.0.1:8082/notes).
